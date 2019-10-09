@@ -1,0 +1,23 @@
+buildscript {
+    ext {
+
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://repo.spring.io/release' }
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'http://repo.spring.io/snapshot' }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        mavenCentral()
+    }
+    
+}
+
+subprojects {
+    apply plugin: "java"
+}
+
+group 'com.melon'
+version '1.0-SNAPSHOT'

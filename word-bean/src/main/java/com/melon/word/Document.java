@@ -65,18 +65,13 @@ public class Document {
     public void compile(Map<String, Object> data) {
         JexlEngine jexlEngine = new JexlBuilder().create();
         MapContext mapContext = new MapContext(data);
-        data.forEach((key, object) -> {
-            JexlExpression expression = jexlEngine.createExpression(key);
-            Object evaluate = expression.evaluate(mapContext);
-            System.out.println("evaluate = " + evaluate);
-        });
         List<XWPFParagraph> paragraphs = xwpfDocument.getParagraphs();
         AtomicBoolean whole = new AtomicBoolean(true);
         // 全局 XWPFRun
         XWPFRun run = null;
         // 全局的表达式
         StringBuffer express = new StringBuffer();
-        // 一个 XWPFRun 中的内容: 'mynameis${user.' 类似的, 则可以保留 'mybaneis'
+        // 一个 XWPFRun 中的内容: 'mynameis${user.' 类似的, 则可以保留 'mynaneis'
         String prefix = "";
         for (XWPFParagraph paragraph : paragraphs) {
             String paragraphText = paragraph.getText();
@@ -94,8 +89,8 @@ public class Document {
                     Object evaluate = expression.evaluate(mapContext);
                     tmpRun.setText(evaluate.toString(), 0);
                 } else {
-                    int beginIndex = runText.indexOf("${") + 2;
-                    int endIndex = runText.indexOf("}");
+                    int beginIndex = runText.indexOf(Commons.LEFT_BRACKETS) + 2;
+                    int endIndex = runText.indexOf(Commons.RIGHT_BRACKETS);
                     if (beginIndex != 1 && endIndex != -1 && beginIndex >= endIndex) {
                         // 此 run 包含表达式
                         String exp = runText.substring(beginIndex, endIndex);

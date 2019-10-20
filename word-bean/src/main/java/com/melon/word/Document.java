@@ -12,7 +12,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,6 +76,8 @@ public class Document {
         XWPFRun run = null;
         // 全局的表达式
         StringBuffer express = new StringBuffer();
+        // 一个 XWPFRun 中的内容: 'mynameis${user.' 类似的, 则可以保留 'mybaneis'
+        String prefix = "";
         for (XWPFParagraph paragraph : paragraphs) {
             String paragraphText = paragraph.getText();
             if (!existsExpress(paragraphText)) {
@@ -104,18 +105,25 @@ public class Document {
                     } else if (beginIndex != 1) {
                         // 存在 ${
                         express.append(runText.substring(beginIndex));
+                        if (beginIndex > 2) {
+                            prefix = runText.substring(0, beginIndex - 2);
+                        }
                         run = tmpRun;
                         whole.set(false);
                     } else if (endIndex != -1) {
                         if (!whole.get()) {
                             express.append(runText, 0, endIndex);
                             JexlExpression expression = jexlEngine.createExpression(express.toString());
+                            // 清空内容
+                            express.delete(0, express.length());
                             Object evaluate = expression.evaluate(mapContext);
                             if (run == null) {
                                 run = tmpRun;
                             }
-                            run.setText(evaluate.toString(), 0);
+                            run.setText(prefix + evaluate.toString(), 0);
                             whole.set(true);
+                            // 置空
+                            prefix = "";
                             tmpRun.setText(runText.substring(endIndex + 1), 0);
                         }
                     } else {

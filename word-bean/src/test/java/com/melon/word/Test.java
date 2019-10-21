@@ -24,9 +24,10 @@ public class Test {
         try {
             fileInputStream = new FileInputStream(path);
             Map<String, Object> data = new HashMap<>(16);
-            data.put("user", new User("zhaokai", "男", 24));
+//            data.put("user", new User("zhaokai", "男", 24));
+            data.put("user.name", "zhaokai000");
             Document document = Document.generate(fileInputStream);
-            document.compile(data);
+            document.parse(data);
             document.saveTo(os = new FileOutputStream(TMP_DIR + "result.docx"));
             System.out.println("successful!");
         } catch (IOException e) {

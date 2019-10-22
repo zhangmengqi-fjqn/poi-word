@@ -3,9 +3,11 @@ package com.melon.word;
 import com.melon.word.utils.DocumentUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,8 +36,14 @@ public class Test {
             document.parse(data);
 
 
-            // 增加个分页符试试
-            DocumentUtils.insertNextPageChar(document1);
+            XWPFTable table = document1.getTables().get(0);
+            CTTbl ctTbl = table.getCTTbl();
+            XWPFTable newTable = document1.createTable();
+            newTable.getCTTbl().setTblGrid(ctTbl.getTblGrid());
+            newTable.getCTTbl().setTblPr(ctTbl.getTblPr());
+            newTable.getCTTbl().setTrArray(ctTbl.getTrArray());
+
+            newTable.getRows().get(0).getTableCells().get(0).setText("我就是那个内容");
 
 
             document.saveTo(os);

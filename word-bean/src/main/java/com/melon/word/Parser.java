@@ -2,13 +2,10 @@ package com.melon.word;
 
 import com.melon.word.constants.Commons;
 import org.apache.commons.jexl3.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
@@ -124,8 +121,6 @@ public class Parser {
             List<XWPFRun> runs = paragraph.getRuns();
             // runs 的 size, 可及时改变
             int runSize = runs.size();
-            // 这个参数表示: 是否在 for 循环内将 pText 指向 splitTextList 的下一个元素
-            AtomicBoolean opposite = new AtomicBoolean(false);
             for (int runIndex = 0; runIndex < runSize; runIndex++) {
                 XWPFRun run = runs.get(runIndex);
                 // 文本位置
@@ -152,7 +147,7 @@ public class Parser {
                         if (runIndex + 1 < runSize) {
                             XWPFRun nextRun = runs.get(runIndex + 1);
                             String nextRunText = nextRun.getText(0);
-                            if ((moreContent.toString() + nextRunText).contains(pText)) {
+                            if ((moreContent.toString() + nextRunText).contains(pText) && !Objects.equals(moreContent.toString() + nextRunText, pText)) {
                                 p.incrementAndGet();
                             }
                         }
@@ -241,6 +236,10 @@ public class Parser {
      * @return 拆分后的数组
      */
     private void splitConfigurationArray(String text, List<String> list) {
+        if (StringUtils.isEmpty(text)) {
+            // 空的自然就不用解析了
+            return;
+        }
         Matcher matcher = Document.SingletonPattern.pattern.matcher(text);
         if (!matcher.find()) {
             list.add(text);
@@ -249,9 +248,19 @@ public class Parser {
         String validText = matcher.group();
         // 这段内容在总的内容中的索引
         int index = text.indexOf(validText);
-        list.add(text.substring(0, index));
-        list.add(validText);
-        splitConfigurationArray(text.substring(index + validText.length()), list);
+        if (index == 0) {
+            index += validText.length();
+        }
+        // 这个是截取的字符串
+        String substring = text.substring(0, index);
+        list.add(substring);
+        // 这个是下次递归待处理的字符串
+        String preHandleString = "";
+        if (!Objects.equals(substring, validText)) {
+            list.add(validText);
+            preHandleString = text.substring(index + validText.length());
+        }
+        splitConfigurationArray(preHandleString, list);
     }
 
     /**

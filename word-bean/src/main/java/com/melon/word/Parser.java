@@ -87,13 +87,7 @@ public class Parser {
      */
     private void parseParagraphs(List<XWPFParagraph> paragraphs) {
         preHandleParagraphs(paragraphs);
-        AtomicBoolean whole = new AtomicBoolean(true);
-        // 全局 XWPFRun
-        XWPFRun run = null;
-        // 全局的表达式
-        StringBuffer express = new StringBuffer();
         // 一个 XWPFRun 中的内容: 'mynameis${user.' 类似的, 则可以保留 'mynaneis'
-        String prefix = "";
         for (XWPFParagraph paragraph : paragraphs) {
             List<XWPFRun> runs = paragraph.getRuns();
             int runSize = runs.size();
@@ -103,45 +97,6 @@ public class Parser {
                 if (Document.existsExpress(runText, false)) {
                     runText = runText.substring(2, runText.length() - 1);
                     tmpRun.setText(getExpressionValue(runText), 0);
-                } else {
-                    int beginIndex = runText.indexOf(Commons.LEFT_BRACKETS) + 2;
-                    if (beginIndex == 1) {
-                        beginIndex = runText.indexOf(Commons.DOLLAR) + 1;
-                    }
-                    int endIndex = runText.indexOf(Commons.RIGHT_BRACKETS);
-                    if (beginIndex != 1 && endIndex != -1 && beginIndex < endIndex) {
-                        // 此 run 包含表达式
-                        String exp = runText.substring(beginIndex, endIndex);
-                        tmpRun.setText(runText.replace(Commons.LEFT_BRACKETS + exp + Commons.RIGHT_BRACKETS, getExpressionValue(exp)), 0);
-                    } else if (beginIndex != 1) {
-                        // 存在 ${ 或者 $
-                        express.append(runText.substring(beginIndex));
-                        if (beginIndex > 2) {
-                            prefix = runText.substring(0, beginIndex - 2);
-                        }
-                        run = tmpRun;
-                        whole.set(false);
-                    } else if (endIndex != -1) {
-                        if (!whole.get()) {
-                            express.append(runText, 0, endIndex);
-                            if (run == null) {
-                                run = tmpRun;
-                            }
-                            run.setText(prefix + getExpressionValue(express.toString()), 0);
-                            // 清空内容
-                            express.delete(0, express.length());
-                            whole.set(true);
-                            // 置空
-                            prefix = "";
-                            tmpRun.setText(runText.substring(endIndex + 1), 0);
-                        }
-                    } else {
-                        if (!whole.get()) {
-                            express.append(runText);
-                            paragraph.removeRun(i--);
-                            runSize--;
-                        }
-                    }
                 }
             }
         }
@@ -169,6 +124,8 @@ public class Parser {
             List<XWPFRun> runs = paragraph.getRuns();
             // runs 的 size, 可及时改变
             int runSize = runs.size();
+            // 这个参数表示: 是否在 for 循环内将 pText 指向 splitTextList 的下一个元素
+            AtomicBoolean opposite = new AtomicBoolean(false);
             for (int runIndex = 0; runIndex < runSize; runIndex++) {
                 XWPFRun run = runs.get(runIndex);
                 // 文本位置
@@ -180,8 +137,29 @@ public class Parser {
                     // 如果 pText 包括 runText, 说明 runText 很有可能是一个纯文本
                     // 因为 splitTextList 是已经分好了的 List 了, 不可能出现配置和纯文本混淆的情况
                     // 此时需要将这个纯文本 runText 从 pText 中去除, 并将 pText 重新放入 splitTextList 中
-                    pText = pText.substring(pText.indexOf(runText) + runText.length());
-                    splitTextList.set(p.get(), pText);
+                    if (Document.existsExpress(pText, false)) {
+                        // 如果此时的 pText 是配置, 那么当前的 run 应该 set 上配置
+                        // 并且 p 不应该增加, 而且之后的都应该删除
+                        if (pText.startsWith(runText)) {
+                            // 配置以 runText 开头, 本 run 需要 set pText
+                            run.setText(pText, runTextPosition);
+                        } else {
+                            paragraph.removeRun(runIndex);
+                            runSize--;
+                            runIndex--;
+                        }
+                        moreContent.append(runText);
+                        if (runIndex + 1 < runSize) {
+                            XWPFRun nextRun = runs.get(runIndex + 1);
+                            String nextRunText = nextRun.getText(0);
+                            if ((moreContent.toString() + nextRunText).contains(pText)) {
+                                p.incrementAndGet();
+                            }
+                        }
+                    } else {
+                        pText = pText.substring(pText.indexOf(runText) + runText.length());
+                        splitTextList.set(p.get(), pText);
+                    }
                 } else {
                     // 到这里的 else 分支后, runText 并不是纯文本了, runText 可能是一下几种格式
                     // nameis${user, nameis${username}, ${user, ${username}123 等四种格式
@@ -215,16 +193,24 @@ public class Parser {
                     } else {
                         // 走到这里说明 runText 中并没有完整的配置, 此时需要将 runText 中对应的 pText 的值删除掉并重新 set 进 run 中
                         // pTextBeginIndex 表示从哪个位置可以截取 runText
-                        int pTextBeginIndex = runText.indexOf(pText) + pText.length();
-                        String tmpRunText = runText.substring(0, pTextBeginIndex);
-                        run.setText(tmpRunText, runTextPosition);
-                        // 需要遍历 splitTextList 的下一个元素了
-                        p.incrementAndGet();
-                        // 然后将剩下的部分新建一个 run 并放到里面
-                        XWPFRun newRun = paragraph.insertNewRun(runIndex + 1);
-                        copyStyle(run, newRun);
-                        newRun.setText(runText.substring(pTextBeginIndex), newRun.getTextPosition());
-                        runSize++;
+                        int pTextBeginIndex = runText.indexOf(pText);
+                        if (pTextBeginIndex == 0) {
+                            // 这个是开头要处理的 run
+                            pTextBeginIndex += pText.length();
+                            String tmpRunText = runText.substring(0, pTextBeginIndex);
+                            run.setText(tmpRunText, runTextPosition);
+                            // 需要遍历 splitTextList 的下一个元素了
+                            p.incrementAndGet();
+                            // 然后将剩下的部分新建一个 run 并放到里面
+                            XWPFRun newRun = paragraph.insertNewRun(runIndex + 1);
+                            copyStyle(run, newRun);
+                            newRun.setText(runText.substring(pTextBeginIndex), newRun.getTextPosition());
+                            runSize++;
+                        } else {
+                            // 这里是末尾要处理的 run
+                            String tmpRunText = runText.substring(pTextBeginIndex);
+                            run.setText(tmpRunText, runTextPosition);
+                        }
                     }
                 }
             }
@@ -243,7 +229,9 @@ public class Parser {
         // 字体
         newRun.setFontFamily(run.getFontFamily());
         // 字体大小
-        newRun.setFontSize(run.getFontSize());
+        if (run.getFontSize() != -1) {
+            newRun.setFontSize(run.getFontSize());
+        }
     }
 
     /**

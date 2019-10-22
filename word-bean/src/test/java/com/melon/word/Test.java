@@ -1,7 +1,5 @@
 package com.melon.word;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,21 +17,17 @@ public class Test {
 
     public static void main(String[] args) {
         final String path = TMP_DIR + "test.docx";
-        FileInputStream fileInputStream = null;
-        OutputStream os = null;
-        try {
-            fileInputStream = new FileInputStream(path);
+        try (FileInputStream fileInputStream = new FileInputStream(path);
+             OutputStream os = new FileOutputStream(TMP_DIR + "result.docx");
+        ) {
             Map<String, Object> data = new HashMap<>(16);
-//            data.put("user", new User("zhaokai", "男", 24));
-            data.put("user.name", "zhaokai000");
+            data.put("user", new User("zhaokai", "男", 24));
             Document document = Document.generate(fileInputStream);
             document.parse(data);
-            document.saveTo(os = new FileOutputStream(TMP_DIR + "result.docx"));
+            document.saveTo(os);
             System.out.println("successful!");
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(fileInputStream, os);
         }
     }
 }

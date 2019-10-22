@@ -94,7 +94,7 @@ public class Document {
      * @return true: 存在; false: 不存在
      */
     static boolean existsExpress(String text, boolean lenient) {
-        Pattern pattern = Pattern.compile(Commons.DOLLAR_REGEX);
+        Pattern pattern = SingletonPattern.pattern;
         Matcher matcher = pattern.matcher(text);
         if (lenient) {
             // 宽松的
@@ -102,6 +102,10 @@ public class Document {
         } else {
             return matcher.matches();
         }
+    }
+
+    public static class SingletonPattern {
+        static Pattern pattern = Pattern.compile(Commons.DOLLAR_REGEX);
     }
 
 }

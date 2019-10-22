@@ -32,4 +32,14 @@ public interface Commons {
      */
     String NEW_LINE_STRING = "\n";
 
+    /**
+     * 美元符号
+     */
+    String DOLLAR = "$";
+
+    /**
+     * 人民币符号
+     */
+    String RMB = "￥";
+
 }

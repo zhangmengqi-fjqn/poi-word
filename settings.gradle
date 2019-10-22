@@ -1,4 +1,5 @@
 rootProject.name = 'poi-word'
 include 'word-bean'
 include 'word-core'
+include 'word-utils'
 

@@ -1,5 +1,12 @@
 package com.melon.word;
 
+import com.melon.word.utils.DocumentUtils;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +30,14 @@ public class Test {
             Map<String, Object> data = new HashMap<>(16);
             data.put("user", new User("zhaokai", "男", 24));
             Document document = Document.generate(fileInputStream);
+            XWPFDocument document1 = document.getDocument();
             document.parse(data);
+
+
+            // 增加个分页符试试
+            DocumentUtils.insertNextPageChar(document1);
+
+
             document.saveTo(os);
             System.out.println("successful!");
         } catch (IOException e) {

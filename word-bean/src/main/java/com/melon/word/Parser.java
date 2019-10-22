@@ -104,7 +104,7 @@ public class Parser {
      *
      * @param paragraphs 待预处理的 paragraphs 的 List
      */
-    private void preHandleParagraphs(List<XWPFParagraph> paragraphs) {
+    public void preHandleParagraphs(List<XWPFParagraph> paragraphs) {
         int paragraphSize = paragraphs.size();
         for (int pIndex = 0; pIndex < paragraphSize; pIndex++) {
             XWPFParagraph paragraph = paragraphs.get(pIndex);

@@ -1,12 +1,3 @@
-buildscript {
-    ext {
-        commonLang3Version = "3.8.1"
-        poiVersion = "4.1.0"
-        jexl3Version = "3.1"
-        commonsIoVersion = "2.6"
-    }
-}
-
 plugins {
     id "maven"
 }
@@ -34,14 +25,15 @@ ext {
 
 dependencies {
     compile project(":word-core")
+    compile project(":word-utils")
 
-    compile("org.apache.commons:commons-lang3:${commonLang3Version}")
-    compile("commons-io:commons-io:${commonsIoVersion}")
-    compile("org.apache.poi:poi:${poiVersion}")
-    compile("org.apache.poi:poi-ooxml:${poiVersion}")
-    compile("org.apache.poi:poi-ooxml-schemas:${poiVersion}")
-    compile("org.apache.poi:poi-scratchpad:${poiVersion}")
-    compile("org.apache.commons:commons-jexl3:${jexl3Version}")
+    compile("org.apache.commons:commons-lang3")
+    compile("commons-io:commons-io")
+    compile("org.apache.poi:poi")
+    compile("org.apache.poi:poi-ooxml")
+    compile("org.apache.poi:poi-ooxml-schemas")
+    compile("org.apache.poi:poi-scratchpad")
+    compile("org.apache.commons:commons-jexl3")
 
     testCompile('junit:junit:4.12')
     testCompileOnly("org.projectlombok:lombok:1.16.20")

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-
+        springBootVersion = "2.1.7.RELEASE"
     }
 
     repositories {
@@ -12,11 +12,39 @@ buildscript {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         mavenCentral()
     }
-    
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
 }
 
 subprojects {
+    ext {
+        springBootVersion = "2.1.7.RELEASE"
+        commonLang3Version = "3.8.1"
+        poiVersion = "4.0.1"
+        jexl3Version = "3.1"
+        commonsIoVersion = "2.6"
+        ooxmlVersion = "1.4"
+    }
+    
     apply plugin: "java"
+    apply plugin: "maven"
+    apply plugin: "io.spring.dependency-management"
+    
+    dependencyManagement {
+        dependencies {
+            dependency("org.apache.commons:commons-lang3:${commonLang3Version}")
+            dependency("commons-io:commons-io:${commonsIoVersion}")
+            dependency("org.apache.poi:poi:${poiVersion}")
+            dependency("org.apache.poi:poi-ooxml:${poiVersion}")
+            dependency("org.apache.poi:poi-ooxml-schemas:${poiVersion}")
+            dependency("org.apache.poi:poi-scratchpad:${poiVersion}")
+            dependency("org.apache.poi:ooxml-schemas:${ooxmlVersion}")
+            dependency("org.apache.commons:commons-jexl3:${jexl3Version}")
+        }
+    }
+
 }
 
 group 'com.melon'

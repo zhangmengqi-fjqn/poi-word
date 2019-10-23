@@ -59,7 +59,7 @@ public class Document {
         // 这里应该将 document 的 sectPr 放到 list 中
         if (xwpfDocument.getDocument().isSetBody()
                 && xwpfDocument.getDocument().getBody().isSetSectPr()) {
-            document.sectPrList.add(xwpfDocument.getDocument().getBody().getSectPr());
+            document.addSectPr(xwpfDocument.getDocument().getBody().getSectPr());
         }
         return document;
     }

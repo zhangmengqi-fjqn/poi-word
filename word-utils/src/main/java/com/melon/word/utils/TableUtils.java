@@ -1,8 +1,11 @@
 package com.melon.word.utils;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFStyle;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+
+import java.math.BigInteger;
 
 /**
  * 表格的工具类
@@ -24,7 +27,34 @@ public class TableUtils {
      */
     public static XWPFTable appendTable(XWPFDocument document, int rows, int cols) {
         XWPFTable table = document.createTable(rows, cols);
-        XWPFStyle style = document.getStyles().getStyleWithName("table");
-        return null;
+        if (document.getDocument().getBody().isSetSectPr()) {
+            CTSectPr sectPr = document.getDocument().getBody().getSectPr();
+            CTPageSz pgSz = sectPr.getPgSz();
+            CTPageMar pgMar = sectPr.getPgMar();
+            BigInteger totalWidth = pgSz.getW();
+            if (pgMar != null) {
+                // 不为空继续计算
+                totalWidth = totalWidth.subtract(pgMar.getLeft()).subtract(pgMar.getRight());
+            }
+            // 每个的宽度
+            BigInteger perWidth = totalWidth.divide(BigInteger.valueOf(cols));
+            // 最后一个的宽度
+            BigInteger lastWidth = totalWidth.subtract(perWidth.multiply(BigInteger.valueOf(cols - 1)));
+            for (XWPFTableRow row : table.getRows()) {
+                for (int i = 0; i < row.getTableCells().size(); i++) {
+                    XWPFTableCell cell = row.getCell(i);
+                    // 设置宽度类型, DXA 目测应该是十进制
+                    cell.setWidthType(TableWidthType.DXA);
+                    if (i == row.getTableCells().size() - 1) {
+                        // 最后一个单元格
+                        cell.setWidth(lastWidth.toString());
+                    } else {
+                        // 不是最后一个单元格
+                        cell.setWidth(perWidth.toString());
+                    }
+                }
+            }
+        }
+        return table;
     }
 }

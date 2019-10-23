@@ -1,12 +1,8 @@
-package com.melon.word;
+package com.melon.word.util;
 
-import com.melon.word.utils.DocumentUtils;
+import com.melon.word.Document;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
 
 import java.io.FileInputStream;
@@ -22,7 +18,9 @@ import java.util.Map;
  */
 public class Test {
 
-    private static final String TMP_DIR = "/Users/zhaokai/Documents/test/";
+    static final String TMP_DIR = "/Users/zhaokai/Documents/test/";
+
+    static final String TEST_PATH = TMP_DIR + "test.docx";
 
     public static void main(String[] args) {
         final String path = TMP_DIR + "test.docx";
@@ -30,7 +28,7 @@ public class Test {
              OutputStream os = new FileOutputStream(TMP_DIR + "result.docx");
         ) {
             Map<String, Object> data = new HashMap<>(16);
-            data.put("user", new User("zhaokai", "男", 24));
+            data.put("user.name", "zhaokai");
             Document document = Document.generate(fileInputStream);
             XWPFDocument document1 = document.getDocument();
             document.parse(data);

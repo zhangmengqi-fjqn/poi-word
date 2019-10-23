@@ -2,10 +2,14 @@ package com.melon.word;
 
 import com.melon.word.constants.Commons;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,9 +26,19 @@ public class Document {
     }
 
     /**
+     * 存放 XWPFDocument 和 Document 的 Map, 用于通过 XWPFDocument 获取 Document
+     */
+    private static final Map<XWPFDocument, Document> DOCUMENT_MAP = new HashMap<>(1);
+
+    /**
      * @see org.apache.poi.xwpf.usermodel.XWPFDocument
      */
     private XWPFDocument xwpfDocument;
+
+    /**
+     * 存放 CTSectPr 的 List, sectPr 表示 section(部分), 有时候可以把 Word 文档看做是多个 seciton 拼接展示的.
+     */
+    private List<CTSectPr> sectPrList;
 
     /**
      * 使用 {@link java.io.InputStream} 创建一个 {@link Document} 对象
@@ -40,6 +54,10 @@ public class Document {
         XWPFDocument xwpfDocument = new XWPFDocument(inputStream);
         Document document = new Document();
         document.xwpfDocument = xwpfDocument;
+        // 放到 Map 中
+        DOCUMENT_MAP.put(xwpfDocument, document);
+        // todo 这里应该将 document 的 sectPr 放到 list 中
+        // todo ...
         return document;
     }
 
@@ -104,7 +122,42 @@ public class Document {
         }
     }
 
-    public static class SingletonPattern {
+    /**
+     * 向 list 中加入此类型元素
+     *
+     * @param sectPr
+     */
+    public synchronized void addSectPr(CTSectPr sectPr) {
+        if (this.sectPrList == null) {
+            this.sectPrList = new ArrayList<>();
+        }
+        // todo 这里的 sectPr 应该是插入进去的, 因为 document 的 sectPr 应该永远在最后一个
+        this.sectPrList.add(sectPr);
+    }
+
+    /**
+     * 获取此类型元素的 List
+     *
+     * @return {@link List<CTSectPr>}
+     */
+    public List<CTSectPr> getSectPrList() {
+        return this.sectPrList;
+    }
+
+    /**
+     * 根据 {@link XWPFDocument} 获取 {@link Document} 对象
+     *
+     * @param document XWPFDocument 对象
+     * @return Document 对象
+     */
+    public static Document getParentDocument(XWPFDocument document) {
+        if (document == null) {
+            throw new NullPointerException();
+        }
+        return DOCUMENT_MAP.get(document);
+    }
+
+    static class SingletonPattern {
         static Pattern pattern = Pattern.compile(Commons.DOLLAR_REGEX);
     }
 

@@ -18,6 +18,8 @@ repositories {
 }
 
 dependencies {
+    compile project(":word-bean")
+    
     compile("org.apache.poi:poi")
     compile("org.apache.poi:poi-ooxml")
     compile("org.apache.poi:poi-ooxml-schemas")

@@ -25,7 +25,6 @@ ext {
 
 dependencies {
     compile project(":word-core")
-    compile project(":word-utils")
 
     compile("org.apache.commons:commons-lang3")
     compile("commons-io:commons-io")

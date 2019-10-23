@@ -1,16 +1,23 @@
 package com.melon.word.utils;
 
+import com.melon.word.Document;
+import com.melon.word.extend.HeaderFooterPolicy;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 
+import java.util.List;
+
 /**
  * 文档的工具类
  *
  * @author zhaokai
  * @date 2019-10-22
+ * @see XWPFDocument
  */
 public class DocumentUtils {
 
@@ -34,6 +41,11 @@ public class DocumentUtils {
         CTPPr ctpPr = paragraph.getCTP().addNewPPr();
         // 这一句其实就是设置下一页的分页符了
         CTSectPr sectPr = ctpPr.addNewSectPr();
+        // 先加入到 document 的 List 中
+        Document parent = Document.getParentDocument(document);
+        if (parent != null) {
+            parent.addSectPr(sectPr);
+        }
         if (!body.isSetSectPr()) {
             // 文档没设置了 sectPr
             return;
@@ -44,5 +56,31 @@ public class DocumentUtils {
         sectPr.setPgMar(bodySectPr.getPgMar());
         sectPr.setCols(bodySectPr.getCols());
         sectPr.setDocGrid(bodySectPr.getDocGrid());
+    }
+
+
+    /**
+     * 向 sectPr 中插入个页眉
+     *
+     * @param document   {@link XWPFDocument}
+     * @param sectPr     {@link CTSectPr}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addHeader(XWPFDocument document, CTSectPr sectPr, List<XWPFParagraph> paragraphs) {
+        HeaderFooterPolicy policy = new HeaderFooterPolicy(document, sectPr);
+        policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, CollectionUtils.isEmpty(paragraphs) ? new XWPFParagraph[]{} : paragraphs.toArray(new XWPFParagraph[]{}));
+    }
+
+
+    /**
+     * 向文档中插入个页眉
+     *
+     * @param document   {@link XWPFDocument}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addHeader(XWPFDocument document, List<XWPFParagraph> paragraphs) {
+        // sectPr 为 null 时, 将会自动获取 document 的 sectPr
+        HeaderFooterPolicy policy = new HeaderFooterPolicy(document, null);
+        policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, CollectionUtils.isEmpty(paragraphs) ? new XWPFParagraph[]{} : paragraphs.toArray(new XWPFParagraph[]{}));
     }
 }

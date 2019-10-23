@@ -363,7 +363,6 @@ public class HeaderFooterPolicy {
 
     /**
      * This is the default Watermark paragraph; the only variable is the text message
-     * TODO: manage all the other variables
      */
     private XWPFParagraph getWatermarkParagraph(String text, int idx) {
         CTP p = CTP.Factory.newInstance();

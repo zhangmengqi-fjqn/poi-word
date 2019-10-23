@@ -56,8 +56,11 @@ public class Document {
         document.xwpfDocument = xwpfDocument;
         // 放到 Map 中
         DOCUMENT_MAP.put(xwpfDocument, document);
-        // todo 这里应该将 document 的 sectPr 放到 list 中
-        // todo ...
+        // 这里应该将 document 的 sectPr 放到 list 中
+        if (xwpfDocument.getDocument().isSetBody()
+                && xwpfDocument.getDocument().getBody().isSetSectPr()) {
+            document.sectPrList.add(xwpfDocument.getDocument().getBody().getSectPr());
+        }
         return document;
     }
 
@@ -131,8 +134,12 @@ public class Document {
         if (this.sectPrList == null) {
             this.sectPrList = new ArrayList<>();
         }
-        // todo 这里的 sectPr 应该是插入进去的, 因为 document 的 sectPr 应该永远在最后一个
-        this.sectPrList.add(sectPr);
+        // 这里的 sectPr 应该是插入进去的, 因为 document 的 sectPr 应该永远在最后一个
+        if (this.sectPrList.size() == 0) {
+            this.sectPrList.add(sectPr);
+        } else {
+            this.sectPrList.add(this.sectPrList.size() - 1, sectPr);
+        }
     }
 
     /**

@@ -43,9 +43,6 @@ public class Test {
             newTable.getCTTbl().setTblPr(ctTbl.getTblPr());
             newTable.getCTTbl().setTrArray(ctTbl.getTrArray());
 
-            newTable.getRows().get(0).getTableCells().get(0).setText("我就是那个内容");
-
-
             document.saveTo(os);
             System.out.println("successful!");
         } catch (IOException e) {

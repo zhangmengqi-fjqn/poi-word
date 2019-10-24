@@ -130,7 +130,6 @@ public class HeaderFooterPolicy {
      */
     public XWPFHeader createHeader(Enum type, XWPFParagraph[] pars) {
         XWPFHeader header = getHeader(type);
-        header._getHdrFtr();
         if (header == null) {
             HdrDocument hdrDoc = HdrDocument.Factory.newInstance();
 

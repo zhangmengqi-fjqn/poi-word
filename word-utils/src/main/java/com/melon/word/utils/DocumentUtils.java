@@ -5,6 +5,8 @@ import com.melon.word.extend.HeaderFooterPolicy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
@@ -80,7 +82,17 @@ public class DocumentUtils {
      */
     public static void addHeader(XWPFDocument document, List<XWPFParagraph> paragraphs) {
         // sectPr 为 null 时, 将会自动获取 document 的 sectPr
-        HeaderFooterPolicy policy = new HeaderFooterPolicy(document, null);
-        policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, CollectionUtils.isEmpty(paragraphs) ? new XWPFParagraph[]{} : paragraphs.toArray(new XWPFParagraph[]{}));
+        addHeader(document, null, paragraphs);
     }
+
+    /**
+     * 合并文档
+     *
+     * @param mainDocument 主要文档
+     * @param subDocument  下一个文档
+     */
+    public static void merge(XWPFDocument mainDocument, XWPFDocument subDocument) {
+
+    }
+
 }

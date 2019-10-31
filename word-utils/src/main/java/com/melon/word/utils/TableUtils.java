@@ -4,6 +4,7 @@ import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 
 import java.math.BigInteger;
 
@@ -56,5 +57,19 @@ public class TableUtils {
             }
         }
         return table;
+    }
+
+    /**
+     * 拷贝表格的样式
+     *
+     * @param oldTable 旧的表格
+     * @param newTable 新的表格
+     */
+    public static void copyStyles(XWPFTable oldTable, XWPFTable newTable) {
+        CTTblPr oldTblPr = oldTable.getCTTbl().getTblPr();
+        CTTblPr newTblPr = newTable.getCTTbl().getTblPr();
+        if (newTblPr == null) {
+            newTable.getCTTbl().setTblPr(oldTblPr);
+        }
     }
 }

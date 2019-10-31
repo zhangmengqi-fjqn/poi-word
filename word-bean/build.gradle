@@ -33,6 +33,7 @@ dependencies {
     compile("org.apache.poi:poi-ooxml-schemas")
     compile("org.apache.poi:poi-scratchpad")
     compile("org.apache.commons:commons-jexl3")
+    compile("commons-beanutils:commons-beanutils")
 
     testCompile('junit:junit:4.12')
     testCompileOnly("org.projectlombok:lombok:1.16.20")

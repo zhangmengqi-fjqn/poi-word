@@ -4,13 +4,8 @@ import com.melon.word.Document;
 import com.melon.word.extend.HeaderFooterPolicy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFFooter;
-import org.apache.poi.xwpf.usermodel.XWPFHeader;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.util.List;
 
@@ -92,7 +87,36 @@ public class DocumentUtils {
      * @param subDocument  下一个文档
      */
     public static void merge(XWPFDocument mainDocument, XWPFDocument subDocument) {
+        // 获取第二个文档的正文内容的元素
+        List<IBodyElement> bodyElements = subDocument.getBodyElements();
+        for (IBodyElement bodyElement : bodyElements) {
+            BodyElementType elementType = bodyElement.getElementType();
+            if (elementType == BodyElementType.PARAGRAPH) {
+                // 处理段落
+                XWPFParagraph subParagraph = (XWPFParagraph) bodyElement;
+                CTP subCtp = subParagraph.getCTP();
+                if (subCtp.isSetPPr() && subCtp.getPPr().isSetSectPr()) {
+                    continue;
+                }
+                XWPFParagraph paragraph = new XWPFParagraph(subCtp, mainDocument);
+                XWPFParagraph newParagraph = mainDocument.createParagraph();
+                int elementPosition = mainDocument.getPosOfParagraph(newParagraph);
+                int paragraphPosition = mainDocument.getParagraphPos(elementPosition);
+                mainDocument.setParagraph(paragraph, paragraphPosition);
+            } else if (elementType == BodyElementType.TABLE) {
+                // 处理表格
+                XWPFTable subTable = (XWPFTable) bodyElement;
+                CTTbl subCtTbl = subTable.getCTTbl();
+                XWPFTable table = new XWPFTable(subCtTbl, mainDocument);
+                XWPFTable newTable = mainDocument.createTable();
+                int elementPosition = mainDocument.getPosOfTable(newTable);
+                int tablePosition = mainDocument.getTablePos(elementPosition);
+                mainDocument.setTable(tablePosition, table);
+            }
+        }
 
+
+        System.out.println("ok");
     }
 
 }

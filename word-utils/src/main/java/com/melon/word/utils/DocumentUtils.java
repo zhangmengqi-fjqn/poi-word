@@ -98,19 +98,29 @@ public class DocumentUtils {
                 if (subCtp.isSetPPr() && subCtp.getPPr().isSetSectPr()) {
                     continue;
                 }
+                // 使用 xmlObject 创建一个 paragraph 段落
                 XWPFParagraph paragraph = new XWPFParagraph(subCtp, mainDocument);
+                // 在 mainDocument 创建一个空的段落
                 XWPFParagraph newParagraph = mainDocument.createParagraph();
+                // 获取新的段落在元素中的位置
                 int elementPosition = mainDocument.getPosOfParagraph(newParagraph);
+                // 获取新的段落在段落list中的位置
                 int paragraphPosition = mainDocument.getParagraphPos(elementPosition);
+                // 将使用 xmlObject 创建的段落 set 到 mainDocument 创建的空段落上
                 mainDocument.setParagraph(paragraph, paragraphPosition);
             } else if (elementType == BodyElementType.TABLE) {
                 // 处理表格
                 XWPFTable subTable = (XWPFTable) bodyElement;
                 CTTbl subCtTbl = subTable.getCTTbl();
+                // 使用 xmlObject 创建一个 table 表格
                 XWPFTable table = new XWPFTable(subCtTbl, mainDocument);
+                // 在 mainDocument 创建一个空的表格
                 XWPFTable newTable = mainDocument.createTable();
+                // 获取新的表格在元素中的位置
                 int elementPosition = mainDocument.getPosOfTable(newTable);
+                // 获取新的表格在表格list中的位置
                 int tablePosition = mainDocument.getTablePos(elementPosition);
+                // 将使用 xmlObject 创建的表格 set 到 mainDocument 创建的空表格上
                 mainDocument.setTable(tablePosition, table);
             }
         }

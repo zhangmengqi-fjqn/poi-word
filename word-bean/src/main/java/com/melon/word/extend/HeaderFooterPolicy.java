@@ -235,7 +235,7 @@ public class HeaderFooterPolicy {
 
 
     private void setFooterReference(Enum type, XWPFHeaderFooter wrapper) {
-        CTHdrFtrRef ref = doc.getDocument().getBody().getSectPr().addNewFooterReference();
+        CTHdrFtrRef ref = sectPr.addNewFooterReference();
         ref.setType(type);
         ref.setId(doc.getRelationId(wrapper));
     }

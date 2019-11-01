@@ -1,6 +1,6 @@
 package com.melon.word.utils;
 
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 
 /**
  * @author zhaokai
@@ -12,12 +12,14 @@ public class RunUtils {
     }
 
     /**
-     * 将旧的 run 的样式拷贝到新的 run 上面
+     * 将旧的 rpr 对象复制到新的 rpr 对象上
      *
-     * @param oldRun 旧的 run
-     * @param newRun 新的 run
+     * @param newRpr 新的
+     * @param oldRpr 旧的
+     * @see org.openxmlformats.schemas.officeDocument.x2006.math.CTRPR
      */
-    public static void copyStyles(XWPFRun oldRun, XWPFRun newRun) {
+    public static void setStyles(CTRPr newRpr, CTRPr oldRpr) {
 
     }
+
 }

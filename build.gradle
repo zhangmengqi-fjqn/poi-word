@@ -27,6 +27,8 @@ subprojects {
         commonsIoVersion = "2.6"
         ooxmlVersion = "1.4"
         commonsBeanVersion = "1.9.4"
+        lombokVersion = "1.16.20"
+        slf4jVersion = "1.7.28"
     }
     
     apply plugin: "java"
@@ -44,6 +46,8 @@ subprojects {
             dependency("org.apache.poi:ooxml-schemas:${ooxmlVersion}")
             dependency("org.apache.commons:commons-jexl3:${jexl3Version}")
             dependency("commons-beanutils:commons-beanutils:${commonsBeanVersion}")
+            dependency("org.projectlombok:lombok:${lombokVersion}")
+            dependency("org.slf4j:slf4j-api:${slf4jVersion}")
         }
     }
 

@@ -34,7 +34,8 @@ dependencies {
     compile("org.apache.poi:poi-scratchpad")
     compile("org.apache.commons:commons-jexl3")
     compile("commons-beanutils:commons-beanutils")
-
+    compile("org.projectlombok:lombok")
+    compile("org.slf4j:slf4j-api")
+    
     testCompile('junit:junit:4.12')
-    testCompileOnly("org.projectlombok:lombok:1.16.20")
 }

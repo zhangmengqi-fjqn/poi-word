@@ -141,19 +141,19 @@ public class DocumentUtils {
                     // 页眉
                     List<CTHdrFtrRef> headerReferenceList = oldSectPr.getHeaderReferenceList();
                     XWPFStyle headerStyle = styles.getStyleWithName("header");
-                    CTPPr headerPPr = headerStyle.getCTStyle().getPPr();
+                    CTPPr headerPpr = headerStyle.getCTStyle().getPPr();
                     for (CTHdrFtrRef ctHdrFtrRef : headerReferenceList) {
                         POIXMLDocumentPart oldDocumentPart = subDocument.getRelationById(ctHdrFtrRef.getId());
                         if (oldDocumentPart instanceof XWPFHeader) {
                             List<XWPFParagraph> paragraphs = ((XWPFHeader) oldDocumentPart).getParagraphs();
                             for (XWPFParagraph paragraph : paragraphs) {
                                 if (!paragraph.getCTP().isSetPPr()) {
-                                    paragraph.getCTP().setPPr(headerPPr);
+                                    paragraph.getCTP().setPPr(headerPpr);
                                 } else {
                                     CTPPr pPr = paragraph.getCTP().getPPr();
                                     if (pPr.getPStyle() != null) {
                                         pPr.unsetPStyle();
-                                        ParagraphUtils.setStyles(pPr, headerPPr);
+                                        ParagraphUtils.setStyles(pPr, headerPpr);
                                     }
                                 }
                             }

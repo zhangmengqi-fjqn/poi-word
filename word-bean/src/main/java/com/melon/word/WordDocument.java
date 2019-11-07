@@ -1,6 +1,7 @@
 package com.melon.word;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
@@ -8,6 +9,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * 适配器模式对 {@link org.apache.poi.xwpf.usermodel.XWPFDocument} 的封装
@@ -158,7 +160,7 @@ public class WordDocument implements AutoCloseable {
                 // 合并表格
                 copyTableToThis((XWPFTable) bodyElement);
             } else if (elementType == BodyElementType.PARAGRAPH) {
-                // 合并表格
+                // 合并段落
                 copyParagraphToThis((XWPFParagraph) bodyElement, wordDocument.document);
             }
         }
@@ -171,79 +173,21 @@ public class WordDocument implements AutoCloseable {
      * @param xwpfDocument 被合并的文档
      */
     private void copyParagraphToThis(XWPFParagraph paragraph, XWPFDocument xwpfDocument) {
-//        CTP subCtp = paragraph.getCTP();
-//        // 在 mainDocument 创建一个空的段落
-//        XWPFParagraph newParagraph = this.document.createParagraph();
-//        if (subCtp.isSetPPr() && subCtp.getPPr().isSetSectPr()) {
-//            // 处理 sectPr
-//            CTPPr ctpPr = newParagraph.getCTP().isSetPPr() ? newParagraph.getCTP().getPPr() : newParagraph.getCTP().addNewPPr();
-//            CTSectPr oldSectPr = subCtp.getPPr().getSectPr();
-//            ctpPr.setSectPr(oldSectPr);
-//            // 先清空页眉页脚
-//            CTSectPr sectPr = ctpPr.getSectPr();
-//            int headerSize = sectPr.sizeOfHeaderReferenceArray();
-//            for (int i = 0; i < headerSize; i++) {
-//                sectPr.removeHeaderReference(i);
-//            }
-//            int footerSize = sectPr.sizeOfFooterReferenceArray();
-//            for (int i = 0; i < footerSize; i++) {
-//                sectPr.removeFooterReference(i);
-//            }
-//            XWPFStyles styles = subDocument.getStyles();
-//            // 页眉
-//            List<CTHdrFtrRef> headerReferenceList = oldSectPr.getHeaderReferenceList();
-//            XWPFStyle headerStyle = styles.getStyleWithName("header");
-//            CTPPr headerPpr = headerStyle.getCTStyle().getPPr();
-//            for (CTHdrFtrRef ctHdrFtrRef : headerReferenceList) {
-//                POIXMLDocumentPart oldDocumentPart = subDocument.getRelationById(ctHdrFtrRef.getId());
-//                if (oldDocumentPart instanceof XWPFHeader) {
-//                    List<XWPFParagraph> paragraphs = ((XWPFHeader) oldDocumentPart).getParagraphs();
-//                    for (XWPFParagraph paragraph : paragraphs) {
-//                        if (!paragraph.getCTP().isSetPPr()) {
-//                            paragraph.getCTP().setPPr(headerPpr);
-//                        } else {
-//                            CTPPr pPr = paragraph.getCTP().getPPr();
-//                            if (pPr.getPStyle() != null) {
-//                                pPr.unsetPStyle();
-//                                ParagraphUtils.setStyles(pPr, headerPpr);
-//                            }
-//                        }
-//                    }
-//                    addHeader(mainDocument, sectPr, paragraphs);
-//                }
-//            }
-//            // 页脚
-//            XWPFStyle footerStyle = styles.getStyleWithName("footer");
-//            CTPPr footerPPr = footerStyle.getCTStyle().getPPr();
-//            List<CTHdrFtrRef> footerReferenceList = oldSectPr.getFooterReferenceList();
-//            for (CTHdrFtrRef ctHdrFtrRef : footerReferenceList) {
-//                POIXMLDocumentPart oldDocumentPart = subDocument.getRelationById(ctHdrFtrRef.getId());
-//                if (oldDocumentPart instanceof XWPFFooter) {
-//                    List<XWPFParagraph> paragraphs = ((XWPFFooter) oldDocumentPart).getParagraphs();
-//                    for (XWPFParagraph paragraph : paragraphs) {
-//                        if (!paragraph.getCTP().isSetPPr()) {
-//                            paragraph.getCTP().setPPr(footerPPr);
-//                        } else {
-//                            CTPPr pPr = paragraph.getCTP().getPPr();
-//                            if (pPr.getPStyle() != null) {
-//                                pPr.unsetPStyle();
-//                                ParagraphUtils.setStyles(pPr, footerPPr);
-//                            }
-//                        }
-//                    }
-//                    addFooter(mainDocument, sectPr, ((XWPFFooter) oldDocumentPart).getParagraphs());
-//                }
-//            }
-//            continue;
-//        }
-//        // 使用 xmlObject 创建一个 paragraph 段落
-//        XWPFParagraph paragraph = new XWPFParagraph(subCtp, mainDocument);
-//        // 获取新的段落在元素中的位置
-//        int elementPosition = mainDocument.getPosOfParagraph(newParagraph);
-//        // 获取新的段落在段落list中的位置
-//        int paragraphPosition = mainDocument.getParagraphPos(elementPosition);
-//        // 将使用 xmlObject 创建的段落 set 到 mainDocument 创建的空段落上
-//        mainDocument.setParagraph(paragraph, paragraphPosition);
+        CTP subCtp = paragraph.getCTP();
+        // 在 mainDocument 创建一个空的段落
+        XWPFParagraph newParagraph = this.document.createParagraph();
+        if (subCtp.isSetPPr() && subCtp.getPPr().isSetSectPr()) {
+            // 如果这个段落带了 sectPr 则不用处理
+            return;
+        }
+        // 使用 xmlObject 创建一个 paragraph 段落
+        XWPFParagraph newPara = new XWPFParagraph(subCtp, xwpfDocument);
+        // 获取新的段落在元素中的位置
+        int elementPosition = xwpfDocument.getPosOfParagraph(newParagraph);
+        // 获取新的段落在段落list中的位置
+        int paragraphPosition = xwpfDocument.getParagraphPos(elementPosition);
+        // 将使用 xmlObject 创建的段落 set 到 mainDocument 创建的空段落上
+        xwpfDocument.setParagraph(newPara, paragraphPosition);
     }
 
     /**

@@ -11,10 +11,9 @@ import java.io.OutputStream;
  */
 public class MergeDocumentsTest {
 
-    @Test
-    public void test() {
-        final String word1 = Constant.TEST_PATH + "test1.docx";
-        final String word2 = Constant.TEST_PATH + "test2.docx";
+    public static void main(String[] args) {
+        final String word1 = Constant.TEST_PATH + "s.docx";
+        final String word2 = Constant.TEST_PATH + "merged-common.docx";
         try (
                 WordDocument document = new WordDocument(word1);
                 WordDocument document2 = new WordDocument(word2);
@@ -22,6 +21,7 @@ public class MergeDocumentsTest {
         ) {
             document.merge(document2);
             document.save(os);
+            System.out.println("successful!");
         } catch (Exception e) {
             e.printStackTrace();
         }

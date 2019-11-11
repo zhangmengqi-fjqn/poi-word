@@ -19,7 +19,7 @@ public class MergeDocumentsTest {
                 WordDocument dx = new WordDocument(x);
                 OutputStream os = new FileOutputStream(Constant.TEST_PATH + "result.docx")
         ) {
-            ds.merge(dw).merge(dx);
+            ds.merge(dw, true).merge(dx, true);
             ds.save(os);
             System.out.println("successful!");
         } catch (Exception e) {

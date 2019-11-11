@@ -151,13 +151,26 @@ public class WordDocument implements AutoCloseable {
     }
 
     /**
-     * 合并文档
+     * 合并文档，默认不复制页眉页脚的格式
      *
      * @param wordDocument 被合并的文档
+     * @return 此文档对象
+     * @throws IOException  when an error occurs
+     * @throws XmlException when an error occurs
      */
     public WordDocument merge(WordDocument wordDocument) throws IOException, XmlException {
+        return merge(wordDocument, false);
+    }
+
+    /**
+     * 合并文档, 可以指定是否复制页眉页脚的格式
+     *
+     * @param wordDocument     被合并的文档
+     * @param copyHeaderFooter 是否复制页眉页脚的格式
+     */
+    public WordDocument merge(WordDocument wordDocument, boolean copyHeaderFooter) throws IOException, XmlException {
         // 复制之前将 sectPr 放到此文档最后一个段落
-        if (this.document.getDocument().getBody().isSetSectPr()) {
+        if (copyHeaderFooter && this.document.getDocument().getBody().isSetSectPr()) {
             XWPFParagraph paragraph = this.document.createParagraph();
             paragraph.getCTP().addNewPPr().setSectPr(this.document.getDocument().getBody().getSectPr());
         }
@@ -179,7 +192,7 @@ public class WordDocument implements AutoCloseable {
         }
 
         // 将被合并的文档的 sectPr 放入基础文档中
-        if (wordDocument.document.getDocument().getBody().isSetSectPr()) {
+        if (copyHeaderFooter && wordDocument.document.getDocument().getBody().isSetSectPr()) {
             this.document.getDocument().getBody().setSectPr(wordDocument.document.getDocument().getBody().getSectPr());
 
             // 设置原来的页眉和页脚

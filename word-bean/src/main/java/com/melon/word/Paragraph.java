@@ -1,5 +1,6 @@
 package com.melon.word;
 
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
@@ -19,8 +20,27 @@ public class Paragraph {
      */
     private XWPFParagraph paragraph;
 
+    /**
+     * 使用已有段落创建
+     *
+     * @param paragraph 段落
+     */
     public Paragraph(XWPFParagraph paragraph) {
         this.paragraph = paragraph;
+    }
+
+    /**
+     * 创建一个空的文档段落
+     *
+     * @param document 文档
+     */
+    public Paragraph(XWPFDocument document) {
+        CTP ctp = CTP.Factory.newInstance();
+        this.paragraph = new XWPFParagraph(ctp, document);
+    }
+
+    public XWPFParagraph getParagraph() {
+        return paragraph;
     }
 
     /**

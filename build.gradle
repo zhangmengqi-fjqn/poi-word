@@ -29,6 +29,7 @@ subprojects {
         commonsBeanVersion = "1.9.4"
         lombokVersion = "1.16.20"
         slf4jVersion = "1.7.28"
+        googleGuavaVersion = "28.1-jre"
     }
     
     apply plugin: "java"
@@ -48,6 +49,7 @@ subprojects {
             dependency("commons-beanutils:commons-beanutils:${commonsBeanVersion}")
             dependency("org.projectlombok:lombok:${lombokVersion}")
             dependency("org.slf4j:slf4j-api:${slf4jVersion}")
+            dependency("com.google.guava:guava:${googleGuavaVersion}")
         }
     }
 

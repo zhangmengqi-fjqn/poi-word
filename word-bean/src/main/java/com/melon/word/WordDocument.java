@@ -1,15 +1,19 @@
 package com.melon.word;
 
+import com.google.common.collect.Lists;
+import com.melon.word.extend.HeaderFooterPolicy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * 适配器模式对 {@link org.apache.poi.xwpf.usermodel.XWPFDocument} 的封装
@@ -29,6 +33,9 @@ public class WordDocument implements AutoCloseable {
      * 在内部创建的输入流需要在内部关闭
      */
     private InputStream inputStream;
+
+    private static final String HEADER = "header";
+    private static final String FOOTER = "footer";
 
     /**
      * 载入一个模板文件作为 Word
@@ -148,7 +155,13 @@ public class WordDocument implements AutoCloseable {
      *
      * @param wordDocument 被合并的文档
      */
-    public void merge(WordDocument wordDocument) throws IOException, XmlException {
+    public WordDocument merge(WordDocument wordDocument) throws IOException, XmlException {
+        // 复制之前将 sectPr 放到此文档最后一个段落
+        if (this.document.getDocument().getBody().isSetSectPr()) {
+            XWPFParagraph paragraph = this.document.createParagraph();
+            paragraph.getCTP().addNewPPr().setSectPr(this.document.getDocument().getBody().getSectPr());
+        }
+
         // 将 wordDocument 中的元素全部复制到 this 对象中
         Iterator<IBodyElement> bodyElementsIterator = wordDocument.document.getBodyElementsIterator();
         while (bodyElementsIterator.hasNext()) {
@@ -162,6 +175,104 @@ public class WordDocument implements AutoCloseable {
             } else if (elementType == BodyElementType.PARAGRAPH) {
                 // 合并段落
                 copyParagraphToThis((XWPFParagraph) bodyElement, wordDocument.document);
+            }
+        }
+
+        // 将被合并的文档的 sectPr 放入基础文档中
+        if (wordDocument.document.getDocument().getBody().isSetSectPr()) {
+            this.document.getDocument().getBody().setSectPr(wordDocument.document.getDocument().getBody().getSectPr());
+
+            // 设置原来的页眉和页脚
+            copyReferencesToThisDocument(wordDocument.document);
+        }
+        return this;
+    }
+
+    /**
+     * 将 document 的页眉页脚等复制到基础文档中
+     *
+     * @param document 被合并的文档
+     */
+    private void copyReferencesToThisDocument(XWPFDocument document) {
+        // 获取 main 文档的 sectPr
+        CTSectPr sectPr = this.document.getDocument().getBody().getSectPr();
+        // 获取 reference 的信息
+        // 总的 reference 的 map
+        Map<String, List<List<XWPFParagraph>>> refMap = new HashMap<>(16);
+        // 页眉的
+        List<CTHdrFtrRef> headerReferenceList = sectPr.getHeaderReferenceList();
+        if (CollectionUtils.isNotEmpty(headerReferenceList)) {
+            for (CTHdrFtrRef ctHdrFtrRef : headerReferenceList) {
+                POIXMLDocumentPart documentPart = document.getRelationById(ctHdrFtrRef.getId());
+                List<XWPFParagraph> paragraphs = ((XWPFHeader) documentPart).getParagraphs();
+                if (refMap.containsKey(HEADER)) {
+                    // 已经存在，追加
+                    refMap.get(HEADER).add(paragraphs);
+                } else {
+                    List<List<XWPFParagraph>> paragraphLists = new ArrayList<>();
+                    paragraphLists.add(paragraphs);
+                    refMap.put(HEADER, paragraphLists);
+                }
+            }
+        } else {
+            // 没有就加一个空的段落
+            List<List<XWPFParagraph>> paragraphLists = new ArrayList<>();
+            paragraphLists.add(Lists.newArrayList(new Paragraph(this.document).getParagraph()));
+            refMap.put(HEADER, paragraphLists);
+        }
+        // 页脚的
+        List<CTHdrFtrRef> footerReferenceList = sectPr.getFooterReferenceList();
+        if (CollectionUtils.isNotEmpty(footerReferenceList)) {
+            for (CTHdrFtrRef ctHdrFtrRef : footerReferenceList) {
+                POIXMLDocumentPart documentPart = document.getRelationById(ctHdrFtrRef.getId());
+                List<XWPFParagraph> paragraphs = ((XWPFFooter) documentPart).getParagraphs();
+                if (refMap.containsKey(FOOTER)) {
+                    // 已经存在，追加
+                    refMap.get(FOOTER).add(paragraphs);
+                } else {
+                    List<List<XWPFParagraph>> paragraphLists = new ArrayList<>();
+                    paragraphLists.add(paragraphs);
+                    refMap.put(FOOTER, paragraphLists);
+                }
+            }
+        } else {
+            // 没有就加一个空的段落
+            List<List<XWPFParagraph>> paragraphLists = new ArrayList<>();
+            paragraphLists.add(Lists.newArrayList(new Paragraph(this.document).getParagraph()));
+            refMap.put(FOOTER, paragraphLists);
+        }
+
+        // 获取完之后就把 main 中的 reference 全部移除
+        if (CollectionUtils.isNotEmpty(headerReferenceList)) {
+            for (int i = 0; i < headerReferenceList.size(); i++) {
+                sectPr.removeHeaderReference(i);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(footerReferenceList)) {
+            for (int i = 0; i < footerReferenceList.size(); i++) {
+                sectPr.removeFooterReference(i);
+            }
+        }
+
+        // 总的, 不为空就取复制
+        if (MapUtils.isNotEmpty(refMap)) {
+            // 页眉信息不为空, 就去复制
+            for (Map.Entry<String, List<List<XWPFParagraph>>> entry : refMap.entrySet()) {
+                String key = entry.getKey();
+                List<List<XWPFParagraph>> paragraphLists = entry.getValue();
+                if (Objects.equals(HEADER, key)) {
+                    // 页眉
+                    for (List<XWPFParagraph> paragraphList : paragraphLists) {
+                        addHeader(this.document, CollectionUtils.isEmpty(paragraphList) ?
+                                Lists.newArrayList(new Paragraph(this.document).getParagraph()) : paragraphList);
+                    }
+                } else {
+                    // 页脚
+                    for (List<XWPFParagraph> paragraphList : paragraphLists) {
+                        addFooter(this.document, CollectionUtils.isEmpty(paragraphList) ?
+                                Lists.newArrayList(new Paragraph(this.document).getParagraph()) : paragraphList);
+                    }
+                }
             }
         }
     }
@@ -209,6 +320,53 @@ public class WordDocument implements AutoCloseable {
         int tablePosition = this.document.getTablePos(elementPosition);
         // 将使用 xmlObject 创建的表格 set 到 mainDocument 创建的空表格上
         this.document.setTable(tablePosition, newCreatedTable);
+    }
+
+    /**
+     * 向 sectPr 中插入个页眉
+     *
+     * @param document   {@link XWPFDocument}
+     * @param sectPr     {@link CTSectPr}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addHeader(XWPFDocument document, CTSectPr sectPr, List<XWPFParagraph> paragraphs) {
+        HeaderFooterPolicy policy = new HeaderFooterPolicy(document, sectPr);
+        policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, CollectionUtils.isEmpty(paragraphs) ? new XWPFParagraph[]{} : paragraphs.toArray(new XWPFParagraph[]{}));
+    }
+
+    /**
+     * 向文档中插入个页眉
+     *
+     * @param document   {@link XWPFDocument}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addHeader(XWPFDocument document, List<XWPFParagraph> paragraphs) {
+        // sectPr 为 null 时, 将会自动获取 document 的 sectPr
+        addHeader(document, null, paragraphs);
+    }
+
+    /**
+     * 向 sectPr 中插入个页脚
+     *
+     * @param document   {@link XWPFDocument}
+     * @param sectPr     {@link CTSectPr}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addFooter(XWPFDocument document, CTSectPr sectPr, List<XWPFParagraph> paragraphs) {
+        HeaderFooterPolicy policy = new HeaderFooterPolicy(document, sectPr);
+        policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, CollectionUtils.isEmpty(paragraphs) ? new XWPFParagraph[]{} : paragraphs.toArray(new XWPFParagraph[]{}));
+    }
+
+
+    /**
+     * 向文档中插入个页脚
+     *
+     * @param document   {@link XWPFDocument}
+     * @param paragraphs {@link List<XWPFParagraph>}
+     */
+    public static void addFooter(XWPFDocument document, List<XWPFParagraph> paragraphs) {
+        // sectPr 为 null 时, 将会自动获取 document 的 sectPr
+        addFooter(document, null, paragraphs);
     }
 
 }

@@ -10,15 +10,17 @@ import java.io.OutputStream;
 public class MergeDocumentsTest {
 
     public static void main(String[] args) {
-        final String word1 = Constant.TEST_PATH + "s.docx";
-        final String word2 = Constant.TEST_PATH + "w.docx";
+        final String s = Constant.TEST_PATH + "s.docx";
+        final String w = Constant.TEST_PATH + "w.docx";
+        final String x = Constant.TEST_PATH + "x.docx";
         try (
-                WordDocument document = new WordDocument(word1);
-                WordDocument document2 = new WordDocument(word2);
+                WordDocument ds = new WordDocument(s);
+                WordDocument dw = new WordDocument(w);
+                WordDocument dx = new WordDocument(x);
                 OutputStream os = new FileOutputStream(Constant.TEST_PATH + "result.docx")
         ) {
-            document.merge(document2);
-            document.save(os);
+            ds.merge(dw).merge(dx);
+            ds.save(os);
             System.out.println("successful!");
         } catch (Exception e) {
             e.printStackTrace();

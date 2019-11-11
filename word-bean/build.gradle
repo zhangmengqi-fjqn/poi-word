@@ -36,6 +36,7 @@ dependencies {
     compile("commons-beanutils:commons-beanutils")
     compile("org.projectlombok:lombok")
     compile("org.slf4j:slf4j-api")
-    
+    compile("com.google.guava:guava")
+
     testCompile('junit:junit:4.12')
 }

@@ -148,7 +148,7 @@ public class WordDocument implements AutoCloseable {
      *
      * @param wordDocument 被合并的文档
      */
-    public void merge(WordDocument wordDocument) {
+    public void merge(WordDocument wordDocument) throws IOException, XmlException {
         // 将 wordDocument 中的元素全部复制到 this 对象中
         Iterator<IBodyElement> bodyElementsIterator = wordDocument.document.getBodyElementsIterator();
         while (bodyElementsIterator.hasNext()) {
@@ -172,22 +172,24 @@ public class WordDocument implements AutoCloseable {
      * @param paragraph    段落
      * @param xwpfDocument 被合并的文档
      */
-    private void copyParagraphToThis(XWPFParagraph paragraph, XWPFDocument xwpfDocument) {
+    private void copyParagraphToThis(XWPFParagraph paragraph, XWPFDocument xwpfDocument) throws IOException, XmlException {
         CTP subCtp = paragraph.getCTP();
-        // 在 mainDocument 创建一个空的段落
-        XWPFParagraph newParagraph = this.document.createParagraph();
         if (subCtp.isSetPPr() && subCtp.getPPr().isSetSectPr()) {
             // 如果这个段落带了 sectPr 则不用处理
             return;
         }
         // 使用 xmlObject 创建一个 paragraph 段落
-        XWPFParagraph newPara = new XWPFParagraph(subCtp, xwpfDocument);
+        XWPFParagraph newPara = new XWPFParagraph(subCtp, this.document);
+        // 在 mainDocument 创建一个空的段落
+        XWPFParagraph newParagraph = this.document.createParagraph();
         // 获取新的段落在元素中的位置
-        int elementPosition = xwpfDocument.getPosOfParagraph(newParagraph);
+        int elementPosition = this.document.getPosOfParagraph(newParagraph);
         // 获取新的段落在段落list中的位置
-        int paragraphPosition = xwpfDocument.getParagraphPos(elementPosition);
+        int paragraphPosition = this.document.getParagraphPos(elementPosition);
+        // 设置默认样式
+        new Paragraph(newPara).setDocumentDefaultStyles(xwpfDocument.getStyle());
         // 将使用 xmlObject 创建的段落 set 到 mainDocument 创建的空段落上
-        xwpfDocument.setParagraph(newPara, paragraphPosition);
+        this.document.setParagraph(newPara, paragraphPosition);
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.melon.word;
 
-import org.junit.Test;
-
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -13,7 +11,7 @@ public class MergeDocumentsTest {
 
     public static void main(String[] args) {
         final String word1 = Constant.TEST_PATH + "s.docx";
-        final String word2 = Constant.TEST_PATH + "merged-common.docx";
+        final String word2 = Constant.TEST_PATH + "w.docx";
         try (
                 WordDocument document = new WordDocument(word1);
                 WordDocument document2 = new WordDocument(word2);

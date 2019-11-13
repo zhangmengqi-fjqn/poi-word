@@ -184,7 +184,7 @@ public class WordDocument implements AutoCloseable {
             BodyElementType elementType = bodyElement.getElementType();
             if (elementType == BodyElementType.TABLE) {
                 // 合并表格
-                copyTableToThis((XWPFTable) bodyElement);
+                copyTableToThis((XWPFTable) bodyElement, wordDocument.document);
             } else if (elementType == BodyElementType.PARAGRAPH) {
                 // 合并段落
                 copyParagraphToThis((XWPFParagraph) bodyElement, wordDocument.document);
@@ -321,7 +321,7 @@ public class WordDocument implements AutoCloseable {
      *
      * @param table 表格
      */
-    private void copyTableToThis(XWPFTable table) {
+    private void copyTableToThis(XWPFTable table, XWPFDocument xwpfDocument) throws IOException, XmlException {
         CTTbl subCtTbl = table.getCTTbl();
         // 使用 xmlObject 创建一个 table 表格
         XWPFTable newCreatedTable = new XWPFTable(subCtTbl, this.document);
@@ -331,6 +331,8 @@ public class WordDocument implements AutoCloseable {
         int elementPosition = this.document.getPosOfTable(newTable);
         // 获取新的表格在表格list中的位置
         int tablePosition = this.document.getTablePos(elementPosition);
+        // 将表格的样式复制给新建的表格
+        new Table(newCreatedTable).setDocumentDefaultStyles(xwpfDocument.getStyle());
         // 将使用 xmlObject 创建的表格 set 到 mainDocument 创建的空表格上
         this.document.setTable(tablePosition, newCreatedTable);
     }

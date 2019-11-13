@@ -30,6 +30,7 @@ subprojects {
         lombokVersion = "1.16.20"
         slf4jVersion = "1.7.28"
         googleGuavaVersion = "28.1-jre"
+        ooxmlSchemasVersion = "1.4"
     }
     
     apply plugin: "java"
@@ -41,8 +42,9 @@ subprojects {
             dependency("org.apache.commons:commons-lang3:${commonLang3Version}")
             dependency("commons-io:commons-io:${commonsIoVersion}")
             dependency("org.apache.poi:poi:${poiVersion}")
-            dependency("org.apache.poi:poi-ooxml:${poiVersion}")
-            dependency("org.apache.poi:poi-ooxml-schemas:${poiVersion}")
+            dependency("org.apache.poi:poi-ooxml:${poiVersion}") {
+                exclude("org.apache.poi:poi-ooxml-schemas")
+            }
             dependency("org.apache.poi:poi-scratchpad:${poiVersion}")
             dependency("org.apache.poi:ooxml-schemas:${ooxmlVersion}")
             dependency("org.apache.commons:commons-jexl3:${jexl3Version}")
@@ -50,6 +52,7 @@ subprojects {
             dependency("org.projectlombok:lombok:${lombokVersion}")
             dependency("org.slf4j:slf4j-api:${slf4jVersion}")
             dependency("com.google.guava:guava:${googleGuavaVersion}")
+            dependency("org.apache.poi:ooxml-schemas:${ooxmlSchemasVersion}")
         }
     }
 

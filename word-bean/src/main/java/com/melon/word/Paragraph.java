@@ -49,21 +49,18 @@ public class Paragraph {
      * @param ctStyles 默认的样式
      */
     public void setDocumentDefaultStyles(CTStyles ctStyles) {
-        Style style = new Style(ctStyles.getStyleList());
-        CTStyle defaultNormalStyle = style.getDefaultNormalStyle();
-        if (defaultNormalStyle != null) {
-            CTP ctp = paragraph.getCTP();
-            if (defaultNormalStyle.isSetPPr()) {
-                // 设置默认的段落样式
-                setParagraphDefaultStyles(ctp.isSetPPr() ? ctp.getPPr() : ctp.addNewPPr(), defaultNormalStyle.getPPr());
-            }
-            if (defaultNormalStyle.isSetRPr()) {
-                // 设置段落样式中的 run 的默认样式
-                List<XWPFRun> runs = paragraph.getRuns();
-                for (XWPFRun run : runs) {
-                    CTRPr ctrPr = run.getCTR().isSetRPr() ? run.getCTR().getRPr() : run.getCTR().addNewRPr();
-                    setRunDefaultStyles(ctrPr, defaultNormalStyle.getRPr());
-                }
+        Style style = new Style(ctStyles);
+        CTP ctp = paragraph.getCTP();
+        if (style.getDefaultCTPPr() != null) {
+            // 设置默认的段落样式
+            setParagraphDefaultStyles(ctp.isSetPPr() ? ctp.getPPr() : ctp.addNewPPr(), style.getDefaultCTPPr());
+        }
+        if (style.getDefaultCTRPr() != null) {
+            // 设置段落样式中的 run 的默认样式
+            List<XWPFRun> runs = paragraph.getRuns();
+            for (XWPFRun run : runs) {
+                CTRPr ctrPr = run.getCTR().isSetRPr() ? run.getCTR().getRPr() : run.getCTR().addNewRPr();
+                setRunDefaultStyles(ctrPr, style.getDefaultCTRPr());
             }
         }
     }

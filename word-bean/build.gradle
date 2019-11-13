@@ -28,7 +28,7 @@ dependencies {
     compile("commons-io:commons-io")
     compile("org.apache.poi:poi")
     compile("org.apache.poi:poi-ooxml")
-    compile("org.apache.poi:poi-ooxml-schemas")
+    compile("org.apache.poi:ooxml-schemas")
     compile("org.apache.poi:poi-scratchpad")
     compile("org.apache.commons:commons-jexl3")
     compile("commons-beanutils:commons-beanutils")

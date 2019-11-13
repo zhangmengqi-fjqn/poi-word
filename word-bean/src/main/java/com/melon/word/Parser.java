@@ -1,6 +1,6 @@
 package com.melon.word;
 
-import com.melon.word.constants.Commons;
+import com.melon.word.common.CommonConstants;
 import org.apache.commons.jexl3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.*;
@@ -280,7 +280,7 @@ public class Parser {
             evaluate = jexlExpression.evaluate(mapContext);
         } catch (JexlException e) {
             if (e.getMessage().contains(UNDEFINED_VARIABLE)) {
-                return Commons.LEFT_BRACKETS + expression + Commons.RIGHT_BRACKETS;
+                return CommonConstants.LEFT_BRACKETS + expression + CommonConstants.RIGHT_BRACKETS;
             }
         }
         // 判断一下 evaluate

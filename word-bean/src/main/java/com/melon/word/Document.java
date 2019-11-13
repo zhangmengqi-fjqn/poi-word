@@ -1,6 +1,6 @@
 package com.melon.word;
 
-import com.melon.word.constants.Commons;
+import com.melon.word.common.CommonConstants;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 
@@ -26,11 +26,6 @@ public class Document {
     }
 
     /**
-     * 存放 XWPFDocument 和 Document 的 Map, 用于通过 XWPFDocument 获取 Document
-     */
-    private static final Map<XWPFDocument, Document> DOCUMENT_MAP = new HashMap<>(1);
-
-    /**
      * @see org.apache.poi.xwpf.usermodel.XWPFDocument
      */
     private XWPFDocument xwpfDocument;
@@ -54,8 +49,6 @@ public class Document {
         XWPFDocument xwpfDocument = new XWPFDocument(inputStream);
         Document document = new Document();
         document.xwpfDocument = xwpfDocument;
-        // 放到 Map 中
-        DOCUMENT_MAP.put(xwpfDocument, document);
         // 这里应该将 document 的 sectPr 放到 list 中
         if (xwpfDocument.getDocument().isSetBody()
                 && xwpfDocument.getDocument().getBody().isSetSectPr()) {
@@ -151,21 +144,8 @@ public class Document {
         return this.sectPrList;
     }
 
-    /**
-     * 根据 {@link XWPFDocument} 获取 {@link Document} 对象
-     *
-     * @param document XWPFDocument 对象
-     * @return Document 对象
-     */
-    public static Document getParentDocument(XWPFDocument document) {
-        if (document == null) {
-            throw new NullPointerException();
-        }
-        return DOCUMENT_MAP.get(document);
-    }
-
     static class SingletonPattern {
-        static Pattern pattern = Pattern.compile(Commons.DOLLAR_REGEX);
+        static Pattern pattern = Pattern.compile(CommonConstants.DOLLAR_REGEX);
     }
 
 }

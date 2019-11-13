@@ -1,4 +1,4 @@
-package com.melon.word.constants;
+package com.melon.word.common;
 
 /**
  * 通用常量
@@ -6,7 +6,7 @@ package com.melon.word.constants;
  * @author zhaokai
  * @date 2019-10-15
  */
-public interface Commons {
+public interface CommonConstants {
 
 
     /**

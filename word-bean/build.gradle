@@ -24,8 +24,6 @@ ext {
 }
 
 dependencies {
-    compile project(":word-core")
-
     compile("org.apache.commons:commons-lang3")
     compile("commons-io:commons-io")
     compile("org.apache.poi:poi")
